@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+/* Un poquito de “cine” y legibilidad */
+:root {
+  color-scheme: dark;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #050510;
+}
+
+/* Utilidad: viñeta suave para centrar mirada */
+.vignette {
+  box-shadow: inset 0 0 120px rgba(0,0,0,0.6);
+}
+
+.paper-texture {
+  background-image:
+    linear-gradient(to right, rgba(0,0,0,0.06), transparent 45%, rgba(0,0,0,0.06)),
+    url("/assets/textures/paper-noise.png");
+  background-size: cover, 420px 420px;
+  background-repeat: no-repeat, repeat;
+  background-blend-mode: multiply;
+}

@@ -1,0 +1,11 @@
+/* Google Fonts (rápido y simple).
+   Si prefieres self-host después, lo hacemos en otra iteración. */
+@import url("https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;600&family=Montserrat:wght@200;300;400;500&display=swap");
+
+.font-handwritten {
+  font-family: "Dancing Script", cursive;
+}
+
+.font-sans-soft {
+  font-family: "Montserrat", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
