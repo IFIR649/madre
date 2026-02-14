@@ -7,7 +7,7 @@ import { usePrefersReducedMotion } from "./usePrefersReducedMotion";
  */
 export function useMagnetField(containerRef, points, opts = {}) {
   const reduce = usePrefersReducedMotion();
-  const { radius = 140, strength = 18, ease = 0.12 } = opts;
+  const { radius = 140, strength = 18, ease = 0.12, enabled = true } = opts;
 
   const [offsets, setOffsets] = useState(() => new Map());
   const targetRef = useRef({ x: 0, y: 0, active: false });
@@ -17,7 +17,7 @@ export function useMagnetField(containerRef, points, opts = {}) {
   const pointsMemo = useMemo(() => points, [points]);
 
   useEffect(() => {
-    if (reduce) return;
+    if (reduce || !enabled) return;
     const el = containerRef?.current;
     if (!el) return;
 
@@ -39,10 +39,14 @@ export function useMagnetField(containerRef, points, opts = {}) {
       el.removeEventListener("mousemove", onMove);
       el.removeEventListener("mouseleave", onLeave);
     };
-  }, [containerRef, reduce]);
+  }, [containerRef, reduce, enabled]);
 
   useEffect(() => {
-    if (reduce) return;
+    if (reduce || !enabled) {
+      currentRef.current = new Map();
+      setOffsets(new Map());
+      return;
+    }
     const el = containerRef?.current;
     if (!el) return;
 
@@ -91,7 +95,7 @@ export function useMagnetField(containerRef, points, opts = {}) {
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [containerRef, pointsMemo, radius, strength, ease, reduce]);
+  }, [containerRef, pointsMemo, radius, strength, ease, reduce, enabled]);
 
   return offsets;
 }

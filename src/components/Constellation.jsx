@@ -2,9 +2,11 @@ import React, { useMemo, useRef } from "react";
 import { motion } from "motion/react";
 import { useMouseParallaxVars } from "../hooks/useMouseParallaxVars";
 import { useMagnetField } from "../hooks/useMagnetField";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 export default function Constellation({ moments, onSelect, selectedId, disabled = false }) {
   const canvasRef = useRef(null);
+  const isMobile = useIsMobile();
 
   useMouseParallaxVars(canvasRef, 14);
 
@@ -12,6 +14,7 @@ export default function Constellation({ moments, onSelect, selectedId, disabled 
     radius: 150,
     strength: 18,
     ease: 0.11,
+    enabled: !isMobile,
   });
 
   const byId = useMemo(() => {
@@ -41,7 +44,7 @@ export default function Constellation({ moments, onSelect, selectedId, disabled 
         >
           {moments.map((m, index) => {
             const isSelected = selectedId === m.id;
-            const off = byId.get(m.id) || { dx: 0, dy: 0 };
+            const off = isMobile ? { dx: 0, dy: 0 } : byId.get(m.id) || { dx: 0, dy: 0 };
 
             return (
               <motion.button
@@ -58,6 +61,7 @@ export default function Constellation({ moments, onSelect, selectedId, disabled 
                   left: `${m.x}%`,
                   top: `${m.y}%`,
                   transform: `translate(-50%, -50%) translate3d(${off.dx}px, ${off.dy}px, 0)`,
+                  willChange: "transform, opacity",
                 }}
                 initial={{
                   opacity: 0,

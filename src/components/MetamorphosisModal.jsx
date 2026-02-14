@@ -3,9 +3,11 @@ import { AnimatePresence, motion } from "motion/react";
 import BookPage from "./BookPage";
 import PastelConfetti from "./PastelConfetti";
 import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 export default function MetamorphosisModal({ moment, onClose }) {
   const reduce = usePrefersReducedMotion();
+  const isMobile = useIsMobile();
 
   return (
     <AnimatePresence mode="wait">
@@ -25,7 +27,9 @@ export default function MetamorphosisModal({ moment, onClose }) {
             type="button"
             aria-label="Cerrar modal"
             onClick={onClose}
-            className="absolute inset-0 bg-black/55 backdrop-blur-md cursor-pointer z-[1]"
+            className={`absolute inset-0 bg-black/55 ${
+              isMobile ? "" : "backdrop-blur-md"
+            } cursor-pointer z-[1]`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

@@ -6,6 +6,7 @@ import SparkleCursor from "./components/SparkleCursor";
 import IntroGate from "./components/IntroGate";
 import FinalMessageOverlay from "./components/FinalMessageOverlay";
 import { moments as MOMENTS } from "./data/moments";
+import { useIsMobile } from "./hooks/useIsMobile";
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -13,6 +14,7 @@ const OPEN_MS = 8000;
 const GAP_MS = 1000;
 
 export default function App() {
+  const isMobile = useIsMobile();
   const [started, setStarted] = useState(false);
 
   const [tourRunning, setTourRunning] = useState(false);
@@ -214,7 +216,9 @@ export default function App() {
                     type="button"
                     onClick={handlePrevious}
                     disabled={currentTourIndex <= 0}
-                    className="flex-shrink-0 flex items-center justify-center w-12 h-12 md:w-auto md:h-auto md:px-4 md:py-2.5 rounded-full bg-slate-900/90 backdrop-blur-xl border-2 border-white/30 hover:bg-slate-800/90 hover:border-white/50 disabled:opacity-40 disabled:cursor-not-allowed transition shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+                    className={`flex-shrink-0 flex items-center justify-center w-12 h-12 md:w-auto md:h-auto md:px-4 md:py-2.5 rounded-full bg-slate-900/95 ${
+                      isMobile ? "" : "backdrop-blur-xl"
+                    } border-2 border-white/30 hover:bg-slate-800/95 hover:border-white/50 disabled:opacity-40 disabled:cursor-not-allowed transition shadow-lg`}
                     aria-label="Anterior"
                   >
                     <svg
@@ -232,7 +236,11 @@ export default function App() {
                   </button>
 
                   {/* Indicador de progreso */}
-                  <div className="flex-shrink-0 flex items-center justify-center px-5 py-2.5 md:px-4 md:py-2 rounded-full bg-slate-900/90 backdrop-blur-xl border-2 border-white/30 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+                  <div
+                    className={`flex-shrink-0 flex items-center justify-center px-5 py-2.5 md:px-4 md:py-2 rounded-full bg-slate-900/95 ${
+                      isMobile ? "" : "backdrop-blur-xl"
+                    } border-2 border-white/30 shadow-lg`}
+                  >
                     <span className="text-white font-sans-soft text-sm md:text-xs font-semibold tracking-wider">
                       {currentTourIndex + 1} / {tourIds.length}
                     </span>
@@ -243,7 +251,9 @@ export default function App() {
                     type="button"
                     onClick={handleNext}
                     disabled={currentTourIndex >= tourIds.length - 1}
-                    className="flex-shrink-0 flex items-center justify-center w-12 h-12 md:w-auto md:h-auto md:px-4 md:py-2.5 rounded-full bg-slate-900/90 backdrop-blur-xl border-2 border-white/30 hover:bg-slate-800/90 hover:border-white/50 disabled:opacity-40 disabled:cursor-not-allowed transition shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+                    className={`flex-shrink-0 flex items-center justify-center w-12 h-12 md:w-auto md:h-auto md:px-4 md:py-2.5 rounded-full bg-slate-900/95 ${
+                      isMobile ? "" : "backdrop-blur-xl"
+                    } border-2 border-white/30 hover:bg-slate-800/95 hover:border-white/50 disabled:opacity-40 disabled:cursor-not-allowed transition shadow-lg`}
                     aria-label="Siguiente"
                   >
                     <span className="hidden md:inline-block mr-2 text-white font-sans-soft text-xs tracking-wider uppercase">
@@ -265,7 +275,9 @@ export default function App() {
                 <button
                   type="button"
                   onClick={handleSkip}
-                  className="w-full md:w-auto px-6 py-2.5 rounded-full bg-slate-900/90 backdrop-blur-xl border-2 border-white/30 hover:bg-slate-800/90 hover:border-white/50 transition shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+                  className={`w-full md:w-auto px-6 py-2.5 rounded-full bg-slate-900/95 ${
+                    isMobile ? "" : "backdrop-blur-xl"
+                  } border-2 border-white/30 hover:bg-slate-800/95 hover:border-white/50 transition shadow-lg`}
                   aria-label="Saltar al final"
                 >
                   <span className="text-white font-sans-soft text-xs md:text-[11px] tracking-widest uppercase font-medium">

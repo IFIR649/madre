@@ -7,6 +7,7 @@ export function useParticles(count = 80) {
       x: Math.random() * 100,
       y: Math.random() * 100,
       size: Math.random() * 2.5 + 1,
+      blur: Math.random() * 1.2,
       duration: Math.random() * 6 + 5,
       delay: Math.random() * 4,
       opacity: Math.random() * 0.45 + 0.15,

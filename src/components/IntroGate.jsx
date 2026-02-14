@@ -1,10 +1,13 @@
 import React from "react";
 import { motion } from "motion/react";
 import SpotifyPlaylist from "./SpotifyPlaylist";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 const PLAYLIST_ID = "2m9DByI15vLxnDK9vWbANV";
 
 export default function IntroGate({ open, onStart }) {
+  const isMobile = useIsMobile();
+
   return (
     <motion.div
       className="absolute inset-0 z-[60] flex items-center justify-center p-4 md:p-6"
@@ -22,12 +25,16 @@ export default function IntroGate({ open, onStart }) {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.7, ease: "easeOut" }}
           />
-          <div className="absolute inset-0 backdrop-blur-xl" />
+          <div className={`absolute inset-0 ${isMobile ? "" : "backdrop-blur-xl"}`} />
         </>
       )}
 
       <motion.div
-        className="relative w-full max-w-xl rounded-[2rem] border border-white/15 bg-white/10 backdrop-blur-2xl shadow-[0_40px_120px_rgba(0,0,0,0.55)] overflow-hidden"
+        className={`relative w-full max-w-xl rounded-[2rem] border border-white/15 bg-white/10 ${
+          isMobile ? "" : "backdrop-blur-2xl"
+        } ${
+          isMobile ? "shadow-xl" : "shadow-[0_40px_120px_rgba(0,0,0,0.55)]"
+        } overflow-hidden`}
         initial={false}
         animate={
           open
