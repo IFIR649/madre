@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+﻿import React, { useEffect, useMemo, useRef, useState } from "react";
 import StarBackground from "./components/StarBackground";
 import Constellation from "./components/Constellation";
 import MetamorphosisModal from "./components/MetamorphosisModal";
@@ -21,10 +21,14 @@ export default function App() {
   const [selectedId, setSelectedId] = useState(null);
   const [finalOpen, setFinalOpen] = useState(false);
   const tourStartedRef = useRef(false);
-  
-  // Nuevo: índice actual en el tour
+
   const [currentTourIndex, setCurrentTourIndex] = useState(-1);
-  const tourTimerRef = useRef(null);
+  const timerRef = useRef(null);
+
+  const tourIds = useMemo(
+    () => MOMENTS.filter((m) => !m.isGuide).map((m) => m.id),
+    []
+  );
 
   const selectedMoment = useMemo(
     () => MOMENTS.find((m) => m.id === selectedId) ?? null,
@@ -38,6 +42,7 @@ export default function App() {
       if (finalOpen) return;
       setSelectedId(null);
     };
+
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [tourRunning, finalOpen]);
@@ -46,65 +51,63 @@ export default function App() {
     if (!started || tourDone) return;
     if (tourStartedRef.current) return;
     tourStartedRef.current = true;
-    
-    const tourIds = MOMENTS.filter((m) => !m.isGuide).map((m) => m.id);
+
     const RAIN_MS = Math.round((MOMENTS.length - 1) * 120 + 1600);
     const INTRO_GATE_DELAY = 900;
 
     const run = async () => {
       setTourRunning(true);
-      
-      await sleep(INTRO_GATE_DELAY);
-      await sleep(RAIN_MS);
-      await sleep(400);
+      console.log("Tour iniciado - esperando que cierre el IntroGate...");
 
-      // Iniciar desde el índice 0
+      await sleep(INTRO_GATE_DELAY);
+      console.log("IntroGate cerrado");
+
+      console.log("Esperando lluvia de estrellas...");
+      await sleep(RAIN_MS);
+      console.log("Lluvia completada");
+
+      await sleep(400);
+      console.log("Layout estabilizado");
+
       setCurrentTourIndex(0);
     };
 
-    run().catch((error) => {
-      console.error("💥 Error en run():", error);
+    run().catch((err) => {
+      console.error("Error en run():", err);
       setTourRunning(false);
     });
 
     return undefined;
   }, [started, tourDone]);
 
-  // Efecto que maneja el ciclo automático basado en currentTourIndex
   useEffect(() => {
-    if (!tourRunning || tourDone) return;
-    if (currentTourIndex < 0) return;
+    if (!tourRunning || tourDone || currentTourIndex < 0) return;
 
-    const tourIds = MOMENTS.filter((m) => !m.isGuide).map((m) => m.id);
-
-    // Si llegamos al final del tour
     if (currentTourIndex >= tourIds.length) {
       setFinalOpen(true);
       return;
     }
 
-    // Mostrar la estrella actual
-    const currentId = tourIds[currentTourIndex];
-    setSelectedId(currentId);
+    const id = tourIds[currentTourIndex];
+    console.log(`Abriendo estrella ${id}...`);
+    setSelectedId(id);
 
-    // Timer para avanzar automáticamente después de OPEN_MS
-    tourTimerRef.current = setTimeout(() => {
+    timerRef.current = setTimeout(() => {
+      console.log(`Cerrando estrella ${id}`);
       setSelectedId(null);
-      
-      // Esperar GAP_MS antes de avanzar al siguiente
-      setTimeout(() => {
+
+      timerRef.current = setTimeout(() => {
         setCurrentTourIndex((prev) => prev + 1);
       }, GAP_MS);
     }, OPEN_MS);
 
-    // Cleanup del timer cuando el índice cambia
     return () => {
-      if (tourTimerRef.current) {
-        clearTimeout(tourTimerRef.current);
-        tourTimerRef.current = null;
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
       }
     };
-  }, [currentTourIndex, tourRunning, tourDone]);
+  }, [currentTourIndex, tourRunning, tourDone, tourIds]);
 
   const onStart = () => {
     setStarted(true);
@@ -116,64 +119,48 @@ export default function App() {
     setTourRunning(false);
   };
 
-  // Funciones de navegación
   const handlePrevious = () => {
     if (currentTourIndex <= 0) return;
-    
-    // Cancelar el timer actual
-    if (tourTimerRef.current) {
-      clearTimeout(tourTimerRef.current);
-      tourTimerRef.current = null;
+
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
     }
-    
-    // Cerrar el actual
+
     setSelectedId(null);
-    
-    // Ir al anterior después de un pequeño delay
     setTimeout(() => {
       setCurrentTourIndex((prev) => prev - 1);
     }, 300);
   };
 
   const handleNext = () => {
-    const tourIds = MOMENTS.filter((m) => !m.isGuide).map((m) => m.id);
     if (currentTourIndex >= tourIds.length - 1) return;
-    
-    // Cancelar el timer actual
-    if (tourTimerRef.current) {
-      clearTimeout(tourTimerRef.current);
-      tourTimerRef.current = null;
+
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
     }
-    
-    // Cerrar el actual
+
     setSelectedId(null);
-    
-    // Ir al siguiente después de un pequeño delay
     setTimeout(() => {
       setCurrentTourIndex((prev) => prev + 1);
     }, 300);
   };
 
   const handleSkip = () => {
-    // Cancelar el timer actual
-    if (tourTimerRef.current) {
-      clearTimeout(tourTimerRef.current);
-      tourTimerRef.current = null;
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
     }
-    
-    // Cerrar el modal actual
+
     setSelectedId(null);
-    
-    // Ir directamente al mensaje final
     setTimeout(() => {
-      const tourIds = MOMENTS.filter((m) => !m.isGuide).map((m) => m.id);
       setCurrentTourIndex(tourIds.length);
     }, 300);
   };
 
   const interactionLocked = tourRunning && !tourDone;
   const showControls = tourRunning && !tourDone && !finalOpen && selectedId !== null;
-  const tourIds = MOMENTS.filter((m) => !m.isGuide).map((m) => m.id);
 
   return (
     <main
@@ -217,69 +204,75 @@ export default function App() {
 
           {/* Controles de navegación */}
           {showControls && (
-            <div className="fixed bottom-8 left-0 right-0 z-[90] flex items-center justify-center gap-6 px-4">
-              {/* Botón Anterior */}
-              <button
-                type="button"
-                onClick={handlePrevious}
-                disabled={currentTourIndex <= 0}
-                className="group flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition"
-                aria-label="Anterior"
-              >
-                <svg
-                  className="w-4 h-4 text-white"
-                  fill="none"
-                  strokeWidth="2"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
-                <span className="text-white/90 font-sans-soft text-xs tracking-wider uppercase">
-                  Anterior
-                </span>
-              </button>
+            <div className="fixed bottom-6 left-0 right-0 z-[90] px-4">
+              {/* Controles principales en dos filas en móvil */}
+              <div className="flex flex-col md:flex-row items-center justify-center gap-3 md:gap-6">
+                {/* Fila 1: Navegación (móvil) / Todo junto (desktop) */}
+                <div className="flex items-center gap-3 w-full md:w-auto justify-center">
+                  {/* Botón Anterior */}
+                  <button
+                    type="button"
+                    onClick={handlePrevious}
+                    disabled={currentTourIndex <= 0}
+                    className="flex-shrink-0 flex items-center justify-center w-12 h-12 md:w-auto md:h-auto md:px-4 md:py-2.5 rounded-full bg-slate-900/90 backdrop-blur-xl border-2 border-white/30 hover:bg-slate-800/90 hover:border-white/50 disabled:opacity-40 disabled:cursor-not-allowed transition shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+                    aria-label="Anterior"
+                  >
+                    <svg
+                      className="w-5 h-5 md:w-4 md:h-4 text-white"
+                      fill="none"
+                      strokeWidth="2.5"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    <span className="hidden md:inline-block ml-2 text-white font-sans-soft text-xs tracking-wider uppercase">
+                      Anterior
+                    </span>
+                  </button>
 
-              {/* Indicador de progreso */}
-              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20">
-                <span className="text-white/90 font-sans-soft text-xs tracking-wider">
-                  {currentTourIndex + 1} / {tourIds.length}
-                </span>
+                  {/* Indicador de progreso */}
+                  <div className="flex-shrink-0 flex items-center justify-center px-5 py-2.5 md:px-4 md:py-2 rounded-full bg-slate-900/90 backdrop-blur-xl border-2 border-white/30 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+                    <span className="text-white font-sans-soft text-sm md:text-xs font-semibold tracking-wider">
+                      {currentTourIndex + 1} / {tourIds.length}
+                    </span>
+                  </div>
+
+                  {/* Botón Siguiente */}
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    disabled={currentTourIndex >= tourIds.length - 1}
+                    className="flex-shrink-0 flex items-center justify-center w-12 h-12 md:w-auto md:h-auto md:px-4 md:py-2.5 rounded-full bg-slate-900/90 backdrop-blur-xl border-2 border-white/30 hover:bg-slate-800/90 hover:border-white/50 disabled:opacity-40 disabled:cursor-not-allowed transition shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+                    aria-label="Siguiente"
+                  >
+                    <span className="hidden md:inline-block mr-2 text-white font-sans-soft text-xs tracking-wider uppercase">
+                      Siguiente
+                    </span>
+                    <svg
+                      className="w-5 h-5 md:w-4 md:h-4 text-white"
+                      fill="none"
+                      strokeWidth="2.5"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Fila 2: Botón Skip (móvil) / Junto con navegación (desktop) */}
+                <button
+                  type="button"
+                  onClick={handleSkip}
+                  className="w-full md:w-auto px-6 py-2.5 rounded-full bg-slate-900/90 backdrop-blur-xl border-2 border-white/30 hover:bg-slate-800/90 hover:border-white/50 transition shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+                  aria-label="Saltar al final"
+                >
+                  <span className="text-white font-sans-soft text-xs md:text-[11px] tracking-widest uppercase font-medium">
+                    ⏭ Saltar al Final
+                  </span>
+                </button>
               </div>
-
-              {/* Botón Siguiente */}
-              <button
-                type="button"
-                onClick={handleNext}
-                disabled={currentTourIndex >= tourIds.length - 1}
-                className="group flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition"
-                aria-label="Siguiente"
-              >
-                <span className="text-white/90 font-sans-soft text-xs tracking-wider uppercase">
-                  Siguiente
-                </span>
-                <svg
-                  className="w-4 h-4 text-white"
-                  fill="none"
-                  strokeWidth="2"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-
-              {/* Botón Skip */}
-              <button
-                type="button"
-                onClick={handleSkip}
-                className="ml-4 px-5 py-2 rounded-full bg-white/15 backdrop-blur-md border border-white/25 hover:bg-white/25 transition"
-                aria-label="Saltar al final"
-              >
-                <span className="text-white/90 font-sans-soft text-xs tracking-widest uppercase">
-                  Saltar al final
-                </span>
-              </button>
             </div>
           )}
 
