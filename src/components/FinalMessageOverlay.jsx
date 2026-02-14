@@ -50,7 +50,7 @@ export default function FinalMessageOverlay({ open, onDone }) {
               className="mt-10 rounded-full px-7 py-4 bg-white text-slate-900 font-sans-soft text-sm tracking-[0.25em] uppercase shadow-[0_20px_70px_rgba(0,0,0,0.35)] hover:scale-[1.01] active:scale-[0.99] transition"
               whileTap={{ scale: 0.98 }}
             >
-              Volver al cielo
+              Volver a la constelación 
             </motion.button>
           </motion.div>
         </motion.div>
